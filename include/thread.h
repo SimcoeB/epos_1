@@ -25,7 +25,7 @@ public:
         FINISHING
     };
     
-    typedef Scheduling_Criteria::Priority Criterion;
+    typedef Scheduling_Criteria::RM Criterion;
 	typedef Scheduling_Criteria::Priority Priority;
     enum {
         HIGH    = Criterion::HIGH,
@@ -156,11 +156,15 @@ inline Thread::Thread(const Configuration & conf,
                       Tn ... an)
     : m_state(conf.state),m_link(this,conf.criterion)
 {
+    //kout << this << "\n";
+    //kout << "constructor_prolog\n";
     constructor_prolog(conf.stack_size);
+    //kout << "context\n";
     m_context = CPU::init_stack(m_stack + conf.stack_size,
                                 &__exit,
                                 entry,
                                 an ...);
+    //kout << "constructor_epilog\n";
     constructor_epilog(entry,conf.stack_size);
 }
 

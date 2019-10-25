@@ -146,11 +146,13 @@ public:
     }
 
     void resume(T* t_elem) {
+        //kout<<"resume\n";
         insert(t_elem);
     }
 
     T* choose() {
         T * o =List::choose()->object();
+        //kout<<"choose\n";
         return o;
     }
 

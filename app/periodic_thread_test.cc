@@ -13,7 +13,7 @@
 __USING_SYS
 
 const int iterations = 10;
-const long period_a = 100; // ms
+const long period_a = 100;// ms
 const long period_b = 200; // ms
 const long period_c = 400; // ms
 

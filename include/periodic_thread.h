@@ -19,13 +19,7 @@ public:
 	  _semaphore(0),
 	  _handler(&_semaphore),
 	  _alarm(period, &_handler, time)
-    {
-	if((state == READY) || (state == RUNNING)) {
-	    m_state = SUSPENDED;
-	    resume();
-	} else
-	    m_state = state;
-    }
+    {}
 /*
 	template<typename ... Tn>
     Periodic_Thread(int (* entry)(Tn ...), Tn ... an,

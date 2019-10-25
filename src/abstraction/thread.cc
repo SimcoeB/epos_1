@@ -16,14 +16,18 @@ volatile unsigned int Thread::m_num_thread = 0;
 void Thread::constructor_prolog(unsigned int stack_size)
 {
     lock();
+    //kout << this << "\n";
     m_num_thread++;
     m_scheduler.insert(this);
+    //kout << "new\n";
     m_stack = new (SYSTEM) char[stack_size];
+    //kout << "...\n";
 } 
 
 void Thread::constructor_epilog(const Log_Addr & entry, 
                                 unsigned int stack_size)
 {
+    //kout << this << "\n";
     if ((m_state != READY) && (m_state != RUNNING)) {
         m_scheduler.suspend(this);
     }
@@ -50,7 +54,7 @@ Thread::~Thread()
 void Thread::priority(const Priority & c)
 {
     lock();
-
+    //kout<<"priority\n";
     m_link.rank(Criterion(c));
 
     if (m_state != RUNNING) {
@@ -68,6 +72,7 @@ void Thread::priority(const Priority & c)
 int Thread::join()
 {
     lock();
+    //kout<<"Join\n";
     if (m_state != FINISHING) {
         m_joining = running();
         m_joining->m_state = SUSPENDED;
@@ -80,6 +85,7 @@ int Thread::join()
 
 void Thread::pass()
 {
+    //kout<<"pass\n";
     lock();
     Thread * prev = running();
     Thread * next = m_scheduler.choose(this);
@@ -92,6 +98,7 @@ void Thread::suspend()
     if (!locked) {
         lock();
     }
+    //kout<<"suspend\n";
     Thread *prev = running();
     prev->m_state = SUSPENDED;
     m_scheduler.suspend(this);
@@ -103,6 +110,7 @@ void Thread::resume()
 {
     lock();
     m_state = READY;
+    //kout<<"resume\n";
     m_scheduler.resume(this);
     if (preemptive) {
         reschedule();
@@ -113,6 +121,7 @@ void Thread::resume()
 void Thread::yield()
 {
     lock();
+    //kout<<"yield\n";
     Thread *prev = running();
     Thread *next = m_scheduler.choose_another();
     dispatch(prev,next);
@@ -121,6 +130,7 @@ void Thread::yield()
 void Thread::exit(int status)
 {
     lock();
+    //kout<<"exit\n";
     m_num_thread--;
     Thread *prev = running();
     prev->m_state = FINISHING;
@@ -138,6 +148,7 @@ void Thread::exit(int status)
 void Thread::sleep(Queue *t_queue)
 {
     lock();
+    //kout<<"sleep\n";
     Thread *prev = running();
     m_scheduler.suspend(prev);
     t_queue->insert(&prev->m_link);
@@ -147,6 +158,7 @@ void Thread::sleep(Queue *t_queue)
 
 void Thread::wakeup(Queue *t_queue)
 {
+    //kout<<"wakeup\n";
     if (!t_queue->empty()) {
         Thread *thread = t_queue->remove()->object();
         thread->m_state = READY;
@@ -160,6 +172,7 @@ void Thread::wakeup(Queue *t_queue)
 
 void Thread::wakeup_all(Queue *t_queue)
 {
+    //kout<<"wakeup_all\n";
     if (!t_queue->empty()) {
         while (!t_queue->empty()) {
             wakeup(t_queue);
@@ -171,6 +184,7 @@ void Thread::wakeup_all(Queue *t_queue)
 
 void Thread::reschedule()
 {
+    //kout<<"reschedule\n";
     Thread * prev = running();
     Thread * next = m_scheduler.choose();
     dispatch(prev,next);
@@ -179,12 +193,15 @@ void Thread::reschedule()
 
 void Thread::time_slicer(const IC::Interrupt_Id & i)
 {
+    //kout<<"time_slicern";
     lock();
     reschedule();
 }
 
 void Thread::dispatch(Thread * prev, Thread * next)
 {
+    //kout<<"dispatch\n";
+    //kout <<  prev << " " << next << "\n";
     if (prev != next) {
         if (prev->m_state == RUNNING) {
             prev->m_state = READY;
@@ -199,6 +216,7 @@ void Thread::dispatch(Thread * prev, Thread * next)
 int Thread::idle()
 {
 	while (m_num_thread > 1) {
+        //kout<<"idle\n";
 	    CPU::int_enable();
 	    CPU::halt();
 	    if (m_scheduler.size() > 0) {
